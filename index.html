@@ -1,0 +1,146 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Requirements Intelligence Engine</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; background-color: #f9f9f9; }
+    header { text-align: center; margin-bottom: 40px; }
+    h1 { color: #003366; margin-bottom: 10px; }
+    .logo { width: 120px; margin: 0 auto; display: block; }
+    .tagline { font-size: 1.2em; color: #555; margin-top: 10px; }
+    .section { background: white; padding: 20px; margin-bottom: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.05); }
+    .upload-area { border: 2px dashed #ccc; padding: 20px; text-align: center; cursor: pointer; }
+    .button { background-color: #003366; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+    .button:hover { background-color: #0055aa; }
+    .checkbox-group { margin-top: 10px; }
+    .summary-table { width: 100%; border-collapse: collapse; }
+    .summary-table th, .summary-table td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    .sidebar { background-color: #eef; padding: 15px; border-radius: 8px; }
+    #scenarioCount { font-weight: bold; color: green; }
+    #spinner { display: none; margin-top: 10px; }
+    #preview { white-space: pre-wrap; background: #f0f0f0; padding: 10px; border-radius: 5px; margin-top: 10px; display: none; }
+  </style>
+</head>
+<body>
+
+<header>
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/EUROCONTROL_logo.svg/512px-EUROCONTROL_logo.svg.png" alt="EUROCONTROL Logo" class="logo">
+  <h1>Requirements Intelligence Engine</h1>
+  <p>Upload system requirements → Get optimized Gherkin scenarios</p>
+</header>
+
+<div class="section">
+  <h2>📤 Upload Section</h2>
+  <label for="docUpload">Upload Requirements Document (.docx)</label><br><br>
+  <input type="file" id="docUpload" accept=".docx"><br><br>
+  <div class="upload-area">Drag & Drop your .docx file here</div>
+</div>
+
+<div class="section">
+  <h2>⚙️ Processing Panel</h2>
+  <button class="button" id="uploadBtn">Generate Gherkin Scenarios</button>
+  <p>Status: <em id="status">Waiting for upload...</em></p>
+  <progress id="progressBar" value="0" max="100"></progress>
+  <div id="spinner">🔄 Processing...</div>
+</div>
+
+<div class="section">
+  <h2>📥 Output Section</h2>
+  <button class="button" id="downloadBtn" style="display:none">Download Gherkin Document (.docx)</button><br><br>
+  <p>Estimated Gherkin Scenarios: <span id="scenarioCount">0</span></p>
+  <label><input type="checkbox" id="previewToggle"> Preview generated scenarios</label>
+  <div id="preview"></div>
+</div>
+
+<div class="section sidebar">
+  <h2>📚 Guidelines</h2>
+  <ul>
+    <li>Strict input format required</li>
+    <li>Follow Gherkin Guidelines v46</li>
+    <li>Preserve FIT criteria exactly</li>
+    <li>Use Scenario Outlines where applicable</li>
+  </ul>
+</div>
+
+<div class="section">
+  <h2>🧪 Advanced Options</h2>
+  <div class="checkbox-group">
+    <label><input type="checkbox"> Enable Scenario Outline Optimization</label><br>
+    <label><input type="checkbox"> Preserve Bullet Formatting</label><br>
+    <label><input type="checkbox"> Strict Actor Referencing</label>
+  </div>
+</div>
+
+<script>
+document.getElementById('uploadBtn').addEventListener('click', async () => {
+  const fileInput = document.getElementById('docUpload');
+  const file = fileInput.files[0];
+  const status = document.getElementById('status');
+  const progressBar = document.getElementById('progressBar');
+  const spinner = document.getElementById('spinner');
+  const preview = document.getElementById('preview');
+  const previewToggle = document.getElementById('previewToggle');
+
+  if (!file || !file.name.endsWith('.docx')) {
+    alert('Please upload a valid .docx file.');
+    return;
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    alert('File size exceeds 5MB limit.');
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  status.textContent = 'Uploading and processing...';
+  progressBar.value = 50;
+  spinner.style.display = 'block';
+
+  try {
+    const response = await fetch('http://localhost:5000/upload', {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!response.ok) throw new Error('Upload failed');
+
+    const blob = await response.blob();
+    const text = await blob.text();
+
+    const scenarioMatches = text.match(/@REQ-/g);
+    const scenarioCount = scenarioMatches ? scenarioMatches.length : 0;
+    document.getElementById('scenarioCount').textContent = scenarioCount;
+
+    preview.textContent = text.split('
+').slice(0, 10).join('
+');
+    previewToggle.addEventListener('change', () => {
+      preview.style.display = previewToggle.checked ? 'block' : 'none';
+    });
+
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'gherkin_output.docx';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    status.textContent = 'Download ready';
+    progressBar.value = 100;
+    document.getElementById('downloadBtn').style.display = 'inline-block';
+  } catch (error) {
+    alert('Error: ' + error.message);
+    status.textContent = 'Error occurred';
+    progressBar.value = 0;
+  } finally {
+    spinner.style.display = 'none';
+  }
+});
+</script>
+
+</body>
+</html>
