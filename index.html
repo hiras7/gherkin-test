@@ -1,48 +1,121 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Gherkin Scenario Generator</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Requirements Intelligence Engine — Modern Enhanced</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <h2>Upload system requirements → Get optimized Gherkin scenarios</h2>
-    <input type="file" id="fileInput" accept=".docx">
-    <button id="uploadBtn">Upload</button>
-    <p id="status">Status: Waiting for upload...</p>
-    <p id="estimate">Estimated Gherkin Scenarios: 0</p>
+  <header class="appbar">
+    <div class="brand">
+      <img src="assets/logo.svg" class="logo" alt="Logo"/>
+      <div class="title">
+        <h1>Requirements Intelligence Engine</h1>
+        <p class="subtitle">from System requirements to Gherkin scenario</p>
+      </div>
+    </div>
+    <div class="app-actions">
+      <button class="btn ghost" id="themeBtn" title="Toggle night / day">🌙 Night</button>
+      <button class="btn ghost" id="settingsBtn" title="Settings">⚙️ Settings</button>
+    </div>
+  </header>
 
-    <script>
-    document.getElementById('uploadBtn').addEventListener('click', async () => {
-        const fileInput = document.getElementById('fileInput');
-        if (!fileInput.files.length) {
-            alert('Please select a .docx file');
-            return;
-        }
+  <main class="shell">
+    <section class="panel primary">
+      <div class="card action">
+        <h2>📤 Upload</h2>
+        <p class="muted">Upload a <strong>.docx</strong> in the strict format</p>
+        <div id="dropZone" class="drop-zone" aria-label="Upload .docx">
+          <input id="fileInput" type="file" accept=".docx"/>
+          <div class="dz-content">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 16V4m0 0l-4 4m4-4l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 16v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <div>
+              <strong>Drag & drop</strong> your .docx file here or <span class="link">browse</span>
+              <div id="droppedName" class="file-name"></div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="btn-group">
+            <button id="previewBtn" class="btn" disabled>Preview</button>
+            <button id="generateBtn" class="btn primary" disabled>Generate</button>
+          </div>
+          <div class="inline mode">
+            <label class="radio"><input type="radio" name="gherkinMode" value="optimized" checked> <span>Optimized</span></label>
+            <label class="radio"><input type="radio" name="gherkinMode" value="atomized"> <span>Atomized</span></label>
+          </div>
+        </div>
+        <div class="status">
+          <span id="status">Status: Waiting for upload…</span>
+          <span id="time" class="muted"></span>
+        </div>
+      </div>
 
-        const formData = new FormData();
-        formData.append('file', fileInput.files[0]);
+      <div class="card options">
+        <h2>🧪 Advanced Options</h2>
+        <div class="options-grid">
+          <label class="toggle"><input type="checkbox" data-opt="opt_outline"> <span>Scenario Outline Optimization</span></label>
+          <label class="toggle"><input type="checkbox" data-opt="opt_preserve_bullets" checked> <span>Preserve Bullet Formatting</span></label>
+          <label class="toggle"><input type="checkbox" data-opt="opt_strict_actor"> <span>Strict Actor Referencing</span></label>
+        </div>
+        <div class="field">
+          <label for="guidelinesInput">📚 Guidelines (optional)</label>
+          <textarea id="guidelinesInput" placeholder="Add reviewer notes, domain guidance or links…"></textarea>
+        </div>
+      </div>
 
-        try {
-            document.getElementById('status').textContent = 'Processing...';
-            const response = await fetch('https://gherkin-testbackend-1.onrender.com/upload', {
-                method: 'POST',
-                body: formData
-            });
+      <div class="card output">
+        <h2>📥 Output</h2>
+        <div id="downloadLink" class="btn-group"></div>
+      </div>
+    </section>
 
-            if (!response.ok) throw new Error('Upload failed');
+    <section class="panel secondary">
+      <div class="card overview">
+        <div class="card-head">
+          <h2>📊 Overview</h2>
+          <span id="stats" class="muted">Total Requirements: 0</span>
+        </div>
+        <div class="table-wrap">
+          <table id="overviewTable" class="table">
+            <thead>
+              <tr><th>Requirement</th><th># FIT</th><th># Scenarios</th></tr>
+            </thead>
+            <tbody>
+              <tr class="skeleton"><td></td><td></td><td></td></tr>
+              <tr class="skeleton"><td></td><td></td><td></td></tr>
+              <tr class="skeleton"><td></td><td></td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'gherkin_output.docx';
-            link.click();
+      <div class="card rules">
+        <h2>🧭 Rules Applied</h2>
+        <ul id="rulesList" class="rules-list"></ul>
+      </div>
+    </section>
+  </main>
 
-            document.getElementById('status').textContent = 'Download ready!';
-        } catch (error) {
-            document.getElementById('status').textContent = 'Error: ' + error.message;
-        }
-    });
-    </script>
+  <dialog id="settingsDialog" class="dialog">
+    <form method="dialog" class="dialog-card">
+      <h3>Settings</h3>
+      <label class="field">
+        <span>Backend API Base URL</span>
+        <input id="apiBaseInput" type="url" placeholder="https://your-app.onrender.com" />
+        <small class="muted">Tip: add <code>?api=https://…</code> to this page URL to override quickly.</small>
+      </label>
+      <div class="dialog-actions">
+        <button value="cancel" class="btn">Cancel</button>
+        <button id="saveSettingsBtn" value="default" class="btn primary">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
 </body>
 </html>
