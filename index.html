@@ -40,6 +40,7 @@
           <div>
             <button id="previewBtn" class="btn">Preview</button>
             <button id="generateBtn" class="btn primary">Generate</button>
+            <button id="generateTsBtn" class="btn primary">Generate Playwright (TS)</button>
           </div>
         </div>
         <div class="status"><div class="muted" id="status">Status: Waiting for upload…</div><div class="muted" id="time"></div></div>
@@ -61,16 +62,17 @@
       <div class="card">
         <h2>📥 Output</h2>
         <div id="downloadLink"></div>
+        <div id="downloadTsLink" style="margin-top:8px;"></div>
       </div>
     </section>
 
     <section class="panel">
       <div class="card">
         <div class="card-head"><h2>📊 Overview</h2></div>
-        <div id="overviewTotals">
-          <p id="totReq">Total number of requirements : 0</p>
-          <p id="totFit">Total number of FIT criterion : 0</p>
-          <p id="totScn">Total number of scenarios : 0</p>
+        <div class="kpis" id="kpiWrap">
+          <div class="kpi"><div class="kpi-label">Total Requirements</div><div class="kpi-value" id="kpiTotalReq">0</div></div>
+          <div class="kpi"><div class="kpi-label">Total FIT Criteria</div><div class="kpi-value" id="kpiTotalFit">0</div></div>
+          <div class="kpi"><div class="kpi-label"># Scenarios</div><div class="kpi-value" id="kpiTotalScen">0</div></div>
         </div>
       </div>
 

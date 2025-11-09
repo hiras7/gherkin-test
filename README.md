@@ -1,1 +1,1 @@
-Centered header, KPI totals only, Advanced Options icon = hammer/wrench (🛠️).
+Frontend with centered header, KPI boxes, and Playwright button.
