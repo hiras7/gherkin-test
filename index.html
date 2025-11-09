@@ -9,11 +9,12 @@
 </head>
 <body>
   <header class="appbar">
+    <div class="appbar-spacer" aria-hidden="true"></div>
     <div class="brand">
-      <img class="logo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%231b75bb'/%3E%3C/svg%3E" alt="Logo" />
+      <img id="logo" class="logo" alt="Logo" />
       <div class="title">
         <h1>Requirements Intelligence Engine</h1>
-        <div class="subtitle">from System requirements to Gherkin scenario</div>
+        <div class="subtitle">from System requirements to Gherkin scenarios</div>
       </div>
     </div>
     <div class="actions">
@@ -25,17 +26,12 @@
   <main class="shell">
     <section class="panel">
       <div class="card">
-        <div class="card-head">
-          <h2>📤 Upload</h2>
-        </div>
+        <div class="card-head"><h2>📤 Upload</h2></div>
         <div id="dropZone" class="drop-zone">
           <input id="fileInput" type="file" accept=".docx" />
-          <div class="dz-content">
-            <div>Drag & drop your .docx file here or browse</div>
-          </div>
+          <div class="dz-content">Drag & drop your .docx file here or browse</div>
         </div>
         <div class="file-name" id="droppedName"></div>
-
         <div class="row">
           <div class="inline mode">
             <label class="radio"><input type="radio" name="gherkinMode" value="optimized" checked> Optimized</label>
@@ -46,15 +42,11 @@
             <button id="generateBtn" class="btn primary">Generate</button>
           </div>
         </div>
-
-        <div class="status">
-          <div class="muted" id="status">Status: Waiting for upload…</div>
-          <div class="muted" id="time"></div>
-        </div>
+        <div class="status"><div class="muted" id="status">Status: Waiting for upload…</div><div class="muted" id="time"></div></div>
       </div>
 
       <div class="card">
-        <h2>🧰 Advanced Options</h2>
+        <h2>🛠️ Advanced Options</h2>
         <div class="row">
           <label class="toggle"><input type="checkbox" data-opt="opt_outline"> Scenario outline optimization</label>
           <label class="toggle"><input type="checkbox" data-opt="opt_preserve_bullets" checked> Preserve Bullet Formatting</label>
@@ -74,23 +66,11 @@
 
     <section class="panel">
       <div class="card">
-        <div class="card-head">
-          <h2>📊 Overview</h2>
-          <div class="muted" id="stats">Total Requirements: 0</div>
-        </div>
-        <div class="kpis" id="kpiWrap">
-          <div class="kpi">
-            <div class="kpi-label">Total Requirements</div>
-            <div class="kpi-value" id="kpiTotalReq">0</div>
-          </div>
-          <div class="kpi">
-            <div class="kpi-label">Total FIT Criteria</div>
-            <div class="kpi-value" id="kpiTotalFit">0</div>
-          </div>
-          <div class="kpi">
-            <div class="kpi-label"># Scenarios</div>
-            <div class="kpi-value" id="kpiTotalScen">0</div>
-          </div>
+        <div class="card-head"><h2>📊 Overview</h2></div>
+        <div id="overviewTotals">
+          <p id="totReq">Total number of requirements : 0</p>
+          <p id="totFit">Total number of FIT criterion : 0</p>
+          <p id="totScn">Total number of scenarios : 0</p>
         </div>
       </div>
 
@@ -101,22 +81,25 @@
     </section>
   </main>
 
-  <!-- Settings dialog -->
+  <!-- Settings dialog (with logo upload) -->
   <dialog id="settingsDialog" class="dialog">
     <div class="dialog-card">
       <h3>Settings</h3>
       <div class="field"><label>Backend API Base URL</label>
         <input id="apiBaseInput" placeholder="https://your-app.onrender.com" />
-        <div class="muted">Tip: add to this page URL as <code>?api=...</code> to override quickly.</div>
       </div>
-      <div class="dialog-actions">
-        <button class="btn" id="saveSettingsBtn">Save</button>
+      <div class="field">
+        <label>Brand Logo (image)</label>
+        <input id="logoInput" type="file" accept="image/*" />
+        <div class="muted">PNG/SVG/JPG. Stored locally in your browser.</div>
+        <img id="logoPreview" style="max-height:44px; margin-top:8px; display:none;" />
+        <button id="clearLogoBtn" class="btn" style="margin-top:8px;">Remove Logo</button>
       </div>
+      <div class="dialog-actions"><button class="btn" id="saveSettingsBtn">Save</button></div>
     </div>
   </dialog>
 
   <div id="toast" class="toast"></div>
-
   <script src="script.js"></script>
 </body>
 </html>
