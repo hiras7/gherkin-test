@@ -1,9 +1,8 @@
 
-// ===== Modern Enhanced Frontend =====
-// API base URL: ?api=... > localStorage(apiBaseUrl) > FALLBACK_API
-const FALLBACK_API = ""; // optional default e.g. "https://your-app.onrender.com"
-const qs = (s) => document.querySelector(s);
-const qsa = (s) => Array.from(document.querySelectorAll(s));
+// ===== Frontend (minimal KPIs) =====
+const FALLBACK_API = ""; // e.g., "https://your-app.onrender.com"
+const qs = (s)=>document.querySelector(s);
+const qsa = (s)=>Array.from(document.querySelectorAll(s));
 function getQueryParam(name){ const u=new URL(window.location.href); return u.searchParams.get(name); }
 function getApiBaseUrl(){ const q=getQueryParam('api'); if(q){ try{localStorage.setItem('apiBaseUrl', q);}catch(e){} return q; } try{const s=localStorage.getItem('apiBaseUrl'); if(s) return s;}catch(e){} return FALLBACK_API; }
 function api(p){ return (getApiBaseUrl()||"") + p; }
@@ -28,17 +27,32 @@ function appendOptions(fd){ qsa('input[type="checkbox"][data-opt]').forEach(cb=>
 function setStatus(m,b){ const el=qs('#status'); if(el){ el.textContent=m; el.classList.toggle('busy', !!b);} }
 function setTime(m){ const el=qs('#time'); if(el) el.textContent=m; }
 function setStats(m){ const el=qs('#stats'); if(el) el.textContent=m; }
-function escapeHtml(s){ return String(s).replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
-function clearSkeleton(){ qsa('#overviewTable .skeleton').forEach(tr=>tr.remove()); }
 function toast(msg,kind){ const t=qs('#toast'); if(!t) return; t.className='toast '+(kind||''); t.textContent=msg; requestAnimationFrame(()=>{ t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2600); }); }
 
 // Renderers
-function renderOverview(list){ const tb=qs('#overviewTable tbody'); if(!tb) return; tb.innerHTML=''; (list||[]).forEach(r=>{ const tr=document.createElement('tr'); const req=r.ReqName||r.ReqID||'—'; const fit=r.FitCount??0; const scen=r.ScenarioCount??1; tr.innerHTML=`<td>${escapeHtml(req)}</td><td>${fit}</td><td>${scen}</td>`; tb.appendChild(tr); }); }
+function renderOverview(list, totals){
+  let tReq=0, tFit=0, tScen=0;
+  if (totals && typeof totals==='object'){
+    tReq = totals.totalRequirements ?? 0;
+    tFit = totals.totalFitCriteria ?? 0;
+    tScen = totals.totalScenarios ?? 0;
+  } else {
+    const arr = list || [];
+    tReq = arr.length;
+    tFit = arr.reduce((s,r)=>s+(r.FitCount??0),0);
+    tScen = arr.reduce((s,r)=>s+(r.ScenarioCount??1),0);
+  }
+  const elReq=qs('#kpiTotalReq'); const elFit=qs('#kpiTotalFit'); const elScn=qs('#kpiTotalScen');
+  if(elReq) elReq.textContent=tReq; if(elFit) elFit.textContent=tFit; if(elScn) elScn.textContent=tScen;
+  setStats(`Total Requirements: ${tReq}`);
+}
+
 function renderRules(rules){ const ul=qs('#rulesList'); if(!ul) return; ul.innerHTML=''; (rules||[]).forEach(x=>{ const li=document.createElement('li'); li.textContent=x; ul.appendChild(li); }); }
 
 // Actions
-async function previewFile(){ const f=qs('#fileInput')?.files?.[0]; if(!f){ toast('Choose a .docx first','err'); return;} const base=getApiBaseUrl(); if(!base){ toast('Set backend URL in Settings (top-right)','err'); return; } setStatus('Preview running…', true); clearSkeleton(); const fd=new FormData(); fd.append('file', f); appendOptions(fd); const t0=performance.now(); const res=await fetch(api('/preview'), {method:'POST', body:fd}).catch(()=>null); const t=((performance.now()-t0)/1000).toFixed(3); if(!res||!res.ok){ setStatus('Preview failed.', false); toast('Preview failed','err'); return; } const payload=await res.json(); setStatus('Preview complete.', false); setTime(`Server: ${payload.time}s • Client: ${t}s`); setStats(`Total Requirements: ${(payload.data||[]).length}`); renderOverview(payload.overview||[]); renderRules(payload.rules||[]); toast('Preview ready','ok'); }
-async function generateFile(){ const f=qs('#fileInput')?.files?.[0]; if(!f){ toast('Choose a .docx first','err'); return;} const base=getApiBaseUrl(); if(!base){ toast('Set backend URL in Settings','err'); return; } setStatus('Generating…', true); const fd=new FormData(); fd.append('file', f); appendOptions(fd); const t0=performance.now(); const res=await fetch(api('/upload'), {method:'POST', body:fd}).catch(()=>null); const t=((performance.now()-t0)/1000).toFixed(3); if(!res||!res.ok){ setStatus('Generation failed.', false); toast('Generation failed','err'); return; } const serverTime=res.headers.get('X-Process-Time'); const blob=await res.blob(); const url=URL.createObjectURL(blob); const d=qs('#downloadLink'); if(d) d.innerHTML=`<a class="btn primary" href="${url}" download="gherkin_output.docx">Download Gherkin Document (.docx)</a>`; setStatus('Generated successfully.', false); setTime(`Server: ${serverTime??'n/a'}s • Client: ${t}s`); toast('Document ready','ok'); }
+async function previewFile(){ const f=qs('#fileInput')?.files?.[0]; if(!f){ toast('Choose a .docx first','err'); return;} const base=getApiBaseUrl(); if(!base){ toast('Set backend URL in Settings (top-right)','err'); return; } setStatus('Preview running…', true); const fd=new FormData(); fd.append('file', f); appendOptions(fd); const t0=performance.now(); const res=await fetch(api('/preview'), {method:'POST', body:fd}).catch(()=>null); const t=((performance.now()-t0)/1000).toFixed(3); if(!res || !res.ok){ setStatus('Preview failed.', false); toast('Preview failed','err'); return; } const payload=await res.json(); setStatus('Preview complete.', false); setTime(`Server: ${payload.time}s • Client: ${t}s`); renderOverview(payload.overview||[], payload.overviewTotals||null); renderRules(payload.rules||[]); toast('Preview ready','ok'); }
+
+async function generateFile(){ const f=qs('#fileInput')?.files?.[0]; if(!f){ toast('Choose a .docx first','err'); return;} const base=getApiBaseUrl(); if(!base){ toast('Set backend URL in Settings','err'); return; } setStatus('Generating…', true); const fd=new FormData(); fd.append('file', f); appendOptions(fd); const t0=performance.now(); const res=await fetch(api('/upload'), {method:'POST', body:fd}).catch(()=>null); const t=((performance.now()-t0)/1000).toFixed(3); if(!res || !res.ok){ setStatus('Generation failed.', false); toast('Generation failed','err'); return; } const serverTime=res.headers.get('X-Process-Time'); const blob=await res.blob(); const url=URL.createObjectURL(blob); const d=qs('#downloadLink'); if(d) d.innerHTML=`<a class="btn primary" href="${url}" download="gherkin_output.docx">Download Gherkin Document (.docx)</a>`; setStatus('Generated successfully.', false); setTime(`Server: ${serverTime??'n/a'}s • Client: ${t}s`); toast('Document ready','ok'); }
 
 // Init
 window.addEventListener('DOMContentLoaded', ()=>{ initDragDrop(); enableButtons(); qs('#previewBtn')?.addEventListener('click', previewFile); qs('#generateBtn')?.addEventListener('click', generateFile); });

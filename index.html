@@ -1,120 +1,121 @@
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Requirements Intelligence Engine — Modern Enhanced</title>
+  <title>Requirements Intelligence Engine</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header class="appbar">
     <div class="brand">
-      <img src="assets/logo.svg" class="logo" alt="Logo"/>
+      <img class="logo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%231b75bb'/%3E%3C/svg%3E" alt="Logo" />
       <div class="title">
         <h1>Requirements Intelligence Engine</h1>
-        <p class="subtitle">from System requirements to Gherkin scenario</p>
+        <div class="subtitle">from System requirements to Gherkin scenario</div>
       </div>
     </div>
-    <div class="app-actions">
-      <button class="btn ghost" id="themeBtn" title="Toggle night / day">🌙 Night</button>
-      <button class="btn ghost" id="settingsBtn" title="Settings">⚙️ Settings</button>
+    <div class="actions">
+      <button id="themeBtn" class="btn ghost">🌙 Night</button>
+      <button id="settingsBtn" class="btn">⚙️ Settings</button>
     </div>
   </header>
 
   <main class="shell">
-    <section class="panel primary">
-      <div class="card action">
-        <h2>📤 Upload</h2>
-        <p class="muted">Upload a <strong>.docx</strong> in the strict format</p>
-        <div id="dropZone" class="drop-zone" aria-label="Upload .docx">
-          <input id="fileInput" type="file" accept=".docx"/>
+    <section class="panel">
+      <div class="card">
+        <div class="card-head">
+          <h2>📤 Upload</h2>
+        </div>
+        <div id="dropZone" class="drop-zone">
+          <input id="fileInput" type="file" accept=".docx" />
           <div class="dz-content">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 16V4m0 0l-4 4m4-4l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 16v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-            <div>
-              <strong>Drag & drop</strong> your .docx file here or <span class="link">browse</span>
-              <div id="droppedName" class="file-name"></div>
-            </div>
+            <div>Drag & drop your .docx file here or browse</div>
           </div>
         </div>
+        <div class="file-name" id="droppedName"></div>
+
         <div class="row">
-          <div class="btn-group">
-            <button id="previewBtn" class="btn" disabled>Preview</button>
-            <button id="generateBtn" class="btn primary" disabled>Generate</button>
-          </div>
           <div class="inline mode">
-            <label class="radio"><input type="radio" name="gherkinMode" value="optimized" checked> <span>Optimized</span></label>
-            <label class="radio"><input type="radio" name="gherkinMode" value="atomized"> <span>Atomized</span></label>
+            <label class="radio"><input type="radio" name="gherkinMode" value="optimized" checked> Optimized</label>
+            <label class="radio"><input type="radio" name="gherkinMode" value="atomized"> Atomized</label>
+          </div>
+          <div>
+            <button id="previewBtn" class="btn">Preview</button>
+            <button id="generateBtn" class="btn primary">Generate</button>
           </div>
         </div>
+
         <div class="status">
-          <span id="status">Status: Waiting for upload…</span>
-          <span id="time" class="muted"></span>
+          <div class="muted" id="status">Status: Waiting for upload…</div>
+          <div class="muted" id="time"></div>
         </div>
       </div>
 
-      <div class="card options">
-        <h2>🧪 Advanced Options</h2>
-        <div class="options-grid">
-          <label class="toggle"><input type="checkbox" data-opt="opt_outline"> <span>Scenario Outline Optimization</span></label>
-          <label class="toggle"><input type="checkbox" data-opt="opt_preserve_bullets" checked> <span>Preserve Bullet Formatting</span></label>
-          <label class="toggle"><input type="checkbox" data-opt="opt_strict_actor"> <span>Strict Actor Referencing</span></label>
+      <div class="card">
+        <h2>🧰 Advanced Options</h2>
+        <div class="row">
+          <label class="toggle"><input type="checkbox" data-opt="opt_outline"> Scenario outline optimization</label>
+          <label class="toggle"><input type="checkbox" data-opt="opt_preserve_bullets" checked> Preserve Bullet Formatting</label>
+          <label class="toggle"><input type="checkbox" data-opt="opt_strict_actor"> Strict Actor Referencing</label>
         </div>
         <div class="field">
           <label for="guidelinesInput">📚 Guidelines (optional)</label>
-          <textarea id="guidelinesInput" placeholder="Add reviewer notes, domain guidance or links…"></textarea>
+          <textarea id="guidelinesInput" placeholder="Add reviewer notes, domain guidance, or NFRs…"></textarea>
         </div>
       </div>
 
-      <div class="card output">
+      <div class="card">
         <h2>📥 Output</h2>
-        <div id="downloadLink" class="btn-group"></div>
+        <div id="downloadLink"></div>
       </div>
     </section>
 
-    <section class="panel secondary">
-      <div class="card overview">
+    <section class="panel">
+      <div class="card">
         <div class="card-head">
           <h2>📊 Overview</h2>
-          <span id="stats" class="muted">Total Requirements: 0</span>
+          <div class="muted" id="stats">Total Requirements: 0</div>
         </div>
-        <div class="table-wrap">
-          <table id="overviewTable" class="table">
-            <thead>
-              <tr><th>Requirement</th><th># FIT</th><th># Scenarios</th></tr>
-            </thead>
-            <tbody>
-              <tr class="skeleton"><td></td><td></td><td></td></tr>
-              <tr class="skeleton"><td></td><td></td><td></td></tr>
-              <tr class="skeleton"><td></td><td></td><td></td></tr>
-            </tbody>
-          </table>
+        <div class="kpis" id="kpiWrap">
+          <div class="kpi">
+            <div class="kpi-label">Total Requirements</div>
+            <div class="kpi-value" id="kpiTotalReq">0</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Total FIT Criteria</div>
+            <div class="kpi-value" id="kpiTotalFit">0</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label"># Scenarios</div>
+            <div class="kpi-value" id="kpiTotalScen">0</div>
+          </div>
         </div>
       </div>
 
-      <div class="card rules">
-        <h2>🧭 Rules Applied</h2>
-        <ul id="rulesList" class="rules-list"></ul>
+      <div class="card">
+        <h2>🧪 Rules Applied</h2>
+        <ul id="rulesList"></ul>
       </div>
     </section>
   </main>
 
+  <!-- Settings dialog -->
   <dialog id="settingsDialog" class="dialog">
-    <form method="dialog" class="dialog-card">
+    <div class="dialog-card">
       <h3>Settings</h3>
-      <label class="field">
-        <span>Backend API Base URL</span>
-        <input id="apiBaseInput" type="url" placeholder="https://your-app.onrender.com" />
-        <small class="muted">Tip: add <code>?api=https://…</code> to this page URL to override quickly.</small>
-      </label>
-      <div class="dialog-actions">
-        <button value="cancel" class="btn">Cancel</button>
-        <button id="saveSettingsBtn" value="default" class="btn primary">Save</button>
+      <div class="field"><label>Backend API Base URL</label>
+        <input id="apiBaseInput" placeholder="https://your-app.onrender.com" />
+        <div class="muted">Tip: add to this page URL as <code>?api=...</code> to override quickly.</div>
       </div>
-    </form>
+      <div class="dialog-actions">
+        <button class="btn" id="saveSettingsBtn">Save</button>
+      </div>
+    </div>
   </dialog>
 
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <div id="toast" class="toast"></div>
 
   <script src="script.js"></script>
 </body>
